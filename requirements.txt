@@ -1,0 +1,8 @@
+Django>=4.2,<5.0
+djangorestframework>=3.14
+django-filter>=23.2
+djangorestframework-simplejwt>=5.3
+psycopg2-binary>=2.9  # Only if using PostgreSQL
+drf-yasg>=1.21  # For API documentation (Swagger)
+django-cors-headers>=4.3
+Pillow>=10.0  # For image fields, if needed

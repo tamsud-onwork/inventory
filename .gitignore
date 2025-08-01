@@ -1,0 +1,60 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.pyc
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+*.manifest
+*.spec
+
+# Django
+*.db.sqlite3
+*.log
+*.pot
+*.pyc
+*.mo
+*.coverage
+htmlcov/
+*.sqlite3
+
+# VS Code
+.vscode/
+
+# Jupyter
+.ipynb_checkpoints/
+*.ipynb
+
+# Environment
+.env
+.venv/
+venv/
+ENV/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Sample Data & Docs
+load_sample_data.py
+API_USAGE_AND_BUSINESS_LOGIC.md
+FE_API_Documentation.md
+logs/
+Architecture/
+docs/
+
+# Ignore migrations cache
+**/migrations/__pycache__/
+
+# Ignore test output
+*.test
+
+# Ignore other unwanted files
+*.bak
+*.swp
+*.tmp
+
