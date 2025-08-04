@@ -10,10 +10,7 @@ admin.site.site_title = "Inventory Admin"
 admin.site.index_title = "Inventory Dashboard"
 
 
-# Override the admin index view to show the dashboard as landing page
-def inventory_dashboard(request):
-    return TemplateResponse(request, "admin/inventory_dashboard.html", {})
-admin.site.index = inventory_dashboard
+
 
 @admin.register(Stock)
 class StockAdmin(admin.ModelAdmin):
