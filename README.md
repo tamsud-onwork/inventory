@@ -1,3 +1,29 @@
+# LIVE DEMO URLS
+
+Website: https://tamilsud.pythonanywhere.com/login/
+Super Admin: https://tamilsud.pythonanywhere.com/admin
+API Documentation: https://tamilsud.pythonanywhere.com/api/documentation/
+
+
+######################################################################
+##  DEMO CREDENTIALS (TO BE REMOVED AFTER DEPLOYMENT)              ##
+######################################################################
+
+**Super Admin Login**  
+Username: `admin`  
+Password: `admin@123`
+
+**Web Portal Admin Login**  
+Username: `inventory_user`  
+Password: `pXfC6sucTSmBiUK`
+
+> **Note:**
+> These credentials are provided for demo purposes only. 
+> I am aware that sharing credentials publicly is not a best practice. 
+> They will be removed immediately after deployment.
+
+######################################################################
+
 # Inventory Management System (Django)
 
 ## Project Structure
