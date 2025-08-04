@@ -1,0 +1,1246 @@
+{% extends 'admin/base_site.html' %}
+{% load static %}
+{% block title %}Inventory Admin Portal{% endblock %}
+{% block content %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<div class="container-fluid mt-4">
+    <!-- Login/Logout Button -->
+    <div class="d-flex justify-content-end mb-2">
+        <button id="loginBtn" class="btn btn-outline-primary me-2" data-bs-toggle="modal" data-bs-target="#loginModal" style="display:none;">Login</button>
+        <button id="logoutBtn" class="btn btn-outline-danger" style="display:none;">Logout</button>
+    </div>
+
+    <!-- Login Modal -->
+    <div class="modal fade" id="loginModal" tabindex="-1" aria-labelledby="loginModalLabel" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="loginModalLabel">Login</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <form id="loginForm">
+              <div class="mb-3">
+                <label for="loginUsername" class="form-label">Username</label>
+                <input type="text" class="form-control" id="loginUsername" required>
+              </div>
+              <div class="mb-3">
+                <label for="loginPassword" class="form-label">Password</label>
+                <input type="password" class="form-control" id="loginPassword" required>
+              </div>
+              <div id="loginError" class="text-danger mb-2" style="display:none;"></div>
+              <button type="submit" class="btn btn-primary">Login</button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+    <h1 class="mb-4">Inventory Admin Portal</h1>
+    <ul class="nav nav-tabs" id="portalTabs" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="dashboard-tab" data-bs-toggle="tab" data-bs-target="#dashboard" type="button" role="tab" aria-controls="dashboard" aria-selected="true">Dashboard</button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="manage-tab" data-bs-toggle="tab" data-bs-target="#manage" type="button" role="tab" aria-controls="manage" aria-selected="false">Manage Data</button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="api-tab" data-bs-toggle="tab" data-bs-target="#api" type="button" role="tab" aria-controls="api" aria-selected="false">API Reference</button>
+        </li>
+    </ul>
+    <div class="tab-content" id="portalTabsContent">
+        <!-- Dashboard Tab -->
+        <div class="tab-pane fade show active p-4" id="dashboard" role="tabpanel" aria-labelledby="dashboard-tab">
+            <div class="row">
+                <div class="col-md-6 mb-4">
+                    <canvas id="barChart"></canvas>
+                </div>
+                <div class="col-md-6 mb-4">
+                    <canvas id="groupedBarChart"></canvas>
+                </div>
+                <div class="col-md-6 mb-4">
+                    <canvas id="pieChart"></canvas>
+                </div>
+            </div>
+            <div class="row mt-4">
+                <div class="col">
+                    <div id="dashboardCounts" class="d-flex flex-wrap gap-4"></div>
+                </div>
+            </div>
+        </div>
+        <!-- Manage Data Tab -->
+        <div class="tab-pane fade p-4" id="manage" role="tabpanel" aria-labelledby="manage-tab">
+            <h2>Manage Data</h2>
+            <ul class="nav nav-pills mb-3" id="manageTabs" role="tablist">
+                <li class="nav-item" role="presentation"><button class="nav-link active" id="products-manage-tab" data-bs-toggle="pill" data-bs-target="#products-manage" type="button" role="tab">Products</button></li>
+                <li class="nav-item" role="presentation"><button class="nav-link" id="suppliers-manage-tab" data-bs-toggle="pill" data-bs-target="#suppliers-manage" type="button" role="tab">Suppliers</button></li>
+                <li class="nav-item" role="presentation"><button class="nav-link" id="warehouses-manage-tab" data-bs-toggle="pill" data-bs-target="#warehouses-manage" type="button" role="tab">Warehouses</button></li>
+                <li class="nav-item" role="presentation"><button class="nav-link" id="inventory-manage-tab" data-bs-toggle="pill" data-bs-target="#inventory-manage" type="button" role="tab">Inventory</button></li>
+                <li class="nav-item" role="presentation"><button class="nav-link" id="orders-manage-tab" data-bs-toggle="pill" data-bs-target="#orders-manage" type="button" role="tab">Orders</button></li>
+                <li class="nav-item" role="presentation"><button class="nav-link" id="users-manage-tab" data-bs-toggle="pill" data-bs-target="#users-manage" type="button" role="tab">Users</button></li>
+            </ul>
+            <div class="tab-content" id="manageTabsContent">
+                <div class="tab-pane fade show active" id="products-manage" role="tabpanel">
+                    <!-- Products Table and Modal (existing code) -->
+                    <button class="btn btn-primary mb-3" data-bs-toggle="modal" data-bs-target="#productModal" onclick="openProductModal()">Add Product</button>
+                    <table class="table table-bordered" id="productsTable">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Name</th>
+                                <th>SKU</th>
+                                <th>Price</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+                <div class="tab-pane fade" id="suppliers-manage" role="tabpanel">
+                    <button class="btn btn-primary mb-3" data-bs-toggle="modal" data-bs-target="#supplierModal" onclick="openSupplierModal()">Add Supplier</button>
+                    <table class="table table-bordered" id="suppliersTable">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Name</th>
+                                <th>Email</th>
+                                <th>Phone</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+                <div class="tab-pane fade" id="warehouses-manage" role="tabpanel">
+                    <button class="btn btn-primary mb-3" data-bs-toggle="modal" data-bs-target="#warehouseModal" onclick="openWarehouseModal()">Add Warehouse</button>
+                    <table class="table table-bordered" id="warehousesTable">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Name</th>
+                                <th>Location</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+                <div class="tab-pane fade" id="inventory-manage" role="tabpanel">
+                    <button class="btn btn-primary mb-3" data-bs-toggle="modal" data-bs-target="#inventoryModal" onclick="openInventoryModal()">Add Inventory</button>
+                    <table class="table table-bordered" id="inventoryTable">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Product</th>
+                                <th>Warehouse</th>
+                                <th>Quantity</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+                <div class="tab-pane fade" id="orders-manage" role="tabpanel">
+                    <button class="btn btn-primary mb-3" data-bs-toggle="modal" data-bs-target="#orderModal" onclick="openOrderModal()">Add Order</button>
+                    <table class="table table-bordered" id="ordersTable">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Product</th>
+                                <th>Quantity</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+                <div class="tab-pane fade" id="users-manage" role="tabpanel">
+                    <button class="btn btn-primary mb-3" data-bs-toggle="modal" data-bs-target="#userModal" onclick="openUserModal()">Add User</button>
+                    <table class="table table-bordered" id="usersTable">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Username</th>
+                                <th>Email</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+            <!-- Modals for each resource (only structure, JS to be added) -->
+            <!-- Supplier Modal -->
+            <div class="modal fade" id="supplierModal" tabindex="-1" aria-labelledby="supplierModalLabel" aria-hidden="true">
+              <div class="modal-dialog">
+                <div class="modal-content">
+                  <div class="modal-header">
+                    <h5 class="modal-title" id="supplierModalLabel">Add Supplier</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                  </div>
+                  <div class="modal-body">
+                    <form id="supplierForm">
+                      <input type="hidden" id="supplierId">
+                      <div class="mb-3">
+                        <label for="supplierName" class="form-label">Name</label>
+                        <input type="text" class="form-control" id="supplierName" required>
+                      </div>
+                      <div class="mb-3">
+                        <label for="supplierEmail" class="form-label">Email</label>
+                        <input type="email" class="form-control" id="supplierEmail" required>
+                      </div>
+                      <div class="mb-3">
+                        <label for="supplierPhone" class="form-label">Phone</label>
+                        <input type="text" class="form-control" id="supplierPhone" required>
+                      </div>
+                      <button type="submit" class="btn btn-primary">Save</button>
+                    </form>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <!-- Warehouse Modal -->
+            <div class="modal fade" id="warehouseModal" tabindex="-1" aria-labelledby="warehouseModalLabel" aria-hidden="true">
+              <div class="modal-dialog">
+                <div class="modal-content">
+                  <div class="modal-header">
+                    <h5 class="modal-title" id="warehouseModalLabel">Add Warehouse</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                  </div>
+                  <div class="modal-body">
+                    <form id="warehouseForm">
+                      <input type="hidden" id="warehouseId">
+                      <div class="mb-3">
+                        <label for="warehouseName" class="form-label">Name</label>
+                        <input type="text" class="form-control" id="warehouseName" required>
+                      </div>
+                      <div class="mb-3">
+                        <label for="warehouseLocation" class="form-label">Location</label>
+                        <input type="text" class="form-control" id="warehouseLocation" required>
+                      </div>
+                      <button type="submit" class="btn btn-primary">Save</button>
+                    </form>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <!-- Inventory Modal -->
+            <div class="modal fade" id="inventoryModal" tabindex="-1" aria-labelledby="inventoryModalLabel" aria-hidden="true">
+              <div class="modal-dialog">
+                <div class="modal-content">
+                  <div class="modal-header">
+                    <h5 class="modal-title" id="inventoryModalLabel">Add Inventory</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                  </div>
+                  <div class="modal-body">
+                    <form id="inventoryForm">
+                      <input type="hidden" id="inventoryId">
+                      <div class="mb-3">
+                        <label for="inventoryProduct" class="form-label">Product</label>
+                        <input type="text" class="form-control" id="inventoryProduct" required>
+                      </div>
+                      <div class="mb-3">
+                        <label for="inventoryWarehouse" class="form-label">Warehouse</label>
+                        <input type="text" class="form-control" id="inventoryWarehouse" required>
+                      </div>
+                      <div class="mb-3">
+                        <label for="inventoryQuantity" class="form-label">Quantity</label>
+                        <input type="number" class="form-control" id="inventoryQuantity" required>
+                      </div>
+                      <button type="submit" class="btn btn-primary">Save</button>
+                    </form>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <!-- Order Modal -->
+            <div class="modal fade" id="orderModal" tabindex="-1" aria-labelledby="orderModalLabel" aria-hidden="true">
+              <div class="modal-dialog">
+                <div class="modal-content">
+                  <div class="modal-header">
+                    <h5 class="modal-title" id="orderModalLabel">Add Order</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                  </div>
+                  <div class="modal-body">
+                    <form id="orderForm">
+                      <input type="hidden" id="orderId">
+                      <div class="mb-3">
+                        <label for="orderProduct" class="form-label">Product</label>
+                        <input type="text" class="form-control" id="orderProduct" required>
+                      </div>
+                      <div class="mb-3">
+                        <label for="orderQuantity" class="form-label">Quantity</label>
+                        <input type="number" class="form-control" id="orderQuantity" required>
+                      </div>
+                      <div class="mb-3">
+                        <label for="orderStatus" class="form-label">Status</label>
+                        <input type="text" class="form-control" id="orderStatus" required>
+                      </div>
+                      <button type="submit" class="btn btn-primary">Save</button>
+                    </form>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <!-- User Modal -->
+            <div class="modal fade" id="userModal" tabindex="-1" aria-labelledby="userModalLabel" aria-hidden="true">
+              <div class="modal-dialog">
+                <div class="modal-content">
+                  <div class="modal-header">
+                    <h5 class="modal-title" id="userModalLabel">Add User</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                  </div>
+                  <div class="modal-body">
+                    <form id="userForm">
+                      <input type="hidden" id="userId">
+                      <div class="mb-3">
+                        <label for="userUsername" class="form-label">Username</label>
+                        <input type="text" class="form-control" id="userUsername" required>
+                      </div>
+                      <div class="mb-3">
+                        <label for="userEmail" class="form-label">Email</label>
+                        <input type="email" class="form-control" id="userEmail" required>
+                      </div>
+                      <button type="submit" class="btn btn-primary">Save</button>
+                    </form>
+                  </div>
+                </div>
+              </div>
+            </div>
+        </div>
+        <!-- API Reference Tab -->
+        <div class="tab-pane fade p-4" id="api" role="tabpanel" aria-labelledby="api-tab">
+            <h2>API Endpoints</h2>
+            <div class="accordion" id="apiAccordion">
+                <!-- Products -->
+                <div class="accordion-item">
+                    <h2 class="accordion-header" id="productsHeading">
+                        <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#productsCollapse" aria-expanded="true" aria-controls="productsCollapse">
+                            Products
+                        </button>
+                    </h2>
+                    <div id="productsCollapse" class="accordion-collapse collapse show" aria-labelledby="productsHeading" data-bs-parent="#apiAccordion">
+                        <div class="accordion-body">
+                            <ul>
+                                <li>GET /api/products/</li>
+                                <li>POST /api/products/</li>
+                                <li>GET /api/products/&lt;id&gt;/</li>
+                                <li>PUT /api/products/&lt;id&gt;/</li>
+                                <li>PATCH /api/products/&lt;id&gt;/</li>
+                                <li>DELETE /api/products/&lt;id&gt;/</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <!-- Suppliers -->
+                <div class="accordion-item">
+                    <h2 class="accordion-header" id="suppliersHeading">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#suppliersCollapse" aria-expanded="false" aria-controls="suppliersCollapse">
+                            Suppliers
+                        </button>
+                    </h2>
+                    <div id="suppliersCollapse" class="accordion-collapse collapse" aria-labelledby="suppliersHeading" data-bs-parent="#apiAccordion">
+                        <div class="accordion-body">
+                            <ul>
+                                <li>GET /api/suppliers/</li>
+                                <li>POST /api/suppliers/</li>
+                                <li>GET /api/suppliers/&lt;id&gt;/</li>
+                                <li>PUT /api/suppliers/&lt;id&gt;/</li>
+                                <li>PATCH /api/suppliers/&lt;id&gt;/</li>
+                                <li>DELETE /api/suppliers/&lt;id&gt;/</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <!-- Warehouses -->
+                <div class="accordion-item">
+                    <h2 class="accordion-header" id="warehousesHeading">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#warehousesCollapse" aria-expanded="false" aria-controls="warehousesCollapse">
+                            Warehouses
+                        </button>
+                    </h2>
+                    <div id="warehousesCollapse" class="accordion-collapse collapse" aria-labelledby="warehousesHeading" data-bs-parent="#apiAccordion">
+                        <div class="accordion-body">
+                            <ul>
+                                <li>GET /api/warehouses/</li>
+                                <li>POST /api/warehouses/</li>
+                                <li>GET /api/warehouses/&lt;id&gt;/</li>
+                                <li>PUT /api/warehouses/&lt;id&gt;/</li>
+                                <li>PATCH /api/warehouses/&lt;id&gt;/</li>
+                                <li>DELETE /api/warehouses/&lt;id&gt;/</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <!-- Inventory -->
+                <div class="accordion-item">
+                    <h2 class="accordion-header" id="inventoryHeading">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#inventoryCollapse" aria-expanded="false" aria-controls="inventoryCollapse">
+                            Inventory
+                        </button>
+                    </h2>
+                    <div id="inventoryCollapse" class="accordion-collapse collapse" aria-labelledby="inventoryHeading" data-bs-parent="#apiAccordion">
+                        <div class="accordion-body">
+                            <ul>
+                                <li>GET /api/inventory/</li>
+                                <li>POST /api/inventory/</li>
+                                <li>GET /api/inventory/&lt;id&gt;/</li>
+                                <li>PUT /api/inventory/&lt;id&gt;/</li>
+                                <li>PATCH /api/inventory/&lt;id&gt;/</li>
+                                <li>DELETE /api/inventory/&lt;id&gt;/</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <!-- Orders -->
+                <div class="accordion-item">
+                    <h2 class="accordion-header" id="ordersHeading">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#ordersCollapse" aria-expanded="false" aria-controls="ordersCollapse">
+                            Orders
+                        </button>
+                    </h2>
+                    <div id="ordersCollapse" class="accordion-collapse collapse" aria-labelledby="ordersHeading" data-bs-parent="#apiAccordion">
+                        <div class="accordion-body">
+                            <ul>
+                                <li>GET /api/orders/</li>
+                                <li>POST /api/orders/</li>
+                                <li>GET /api/orders/&lt;id&gt;/</li>
+                                <li>PUT /api/orders/&lt;id&gt;/</li>
+                                <li>PATCH /api/orders/&lt;id&gt;/</li>
+                                <li>DELETE /api/orders/&lt;id&gt;/</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <!-- Users -->
+                <div class="accordion-item">
+                    <h2 class="accordion-header" id="usersHeading">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#usersCollapse" aria-expanded="false" aria-controls="usersCollapse">
+                            Users
+                        </button>
+                    </h2>
+                    <div id="usersCollapse" class="accordion-collapse collapse" aria-labelledby="usersHeading" data-bs-parent="#apiAccordion">
+                        <div class="accordion-body">
+                            <ul>
+                                <li>GET /api/users/</li>
+                                <li>POST /api/users/</li>
+                                <li>GET /api/users/&lt;id&gt;/</li>
+                                <li>PUT /api/users/&lt;id&gt;/</li>
+                                <li>PATCH /api/users/&lt;id&gt;/</li>
+                                <li>DELETE /api/users/&lt;id&gt;/</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="mt-4">
+                <a href="/swagger/" target="_blank" class="btn btn-outline-primary">View Full API Docs (Swagger)</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+// NOTE: Make sure your Django URLs for inventory, users, and orders are routed as /api/inventory/, /api/users/, /api/orders/.
+// If not, update the fetch URLs below to match your actual API endpoints.
+// --- JWT Login/Logout ---
+function updateAuthUI() {
+    const token = localStorage.getItem('jwtToken');
+    document.getElementById('loginBtn').style.display = token ? 'none' : '';
+    document.getElementById('logoutBtn').style.display = token ? '' : 'none';
+}
+
+updateAuthUI();
+
+document.getElementById('logoutBtn').onclick = function() {
+    localStorage.removeItem('jwtToken');
+    updateAuthUI();
+    location.reload();
+};
+
+document.getElementById('loginForm').onsubmit = function(e) {
+    e.preventDefault();
+    const username = document.getElementById('loginUsername').value;
+    const password = document.getElementById('loginPassword').value;
+    document.getElementById('loginError').style.display = 'none';
+    fetch('/api/token/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, password })
+    })
+    .then(res => res.json().then(data => ({ status: res.status, data })))
+    .then(({ status, data }) => {
+        if (status !== 200 || !data.access) {
+            throw new Error(data.detail || 'Login failed');
+        }
+        localStorage.setItem('jwtToken', data.access);
+        updateAuthUI();
+        var modal = bootstrap.Modal.getInstance(document.getElementById('loginModal'));
+        modal.hide();
+        location.reload();
+    })
+    .catch(err => {
+        document.getElementById('loginError').innerText = err.message;
+        document.getElementById('loginError').style.display = '';
+    });
+};
+
+// --- Dashboard Real Data (All Modules) ---
+let barChart, groupedBarChart, pieChart;
+function fetchDashboardCounts() {
+    const token = localStorage.getItem('jwtToken');
+    if (!token) return;
+    Promise.all([
+        fetch('/api/products/', { headers: { 'Authorization': `Bearer ${token}` } }).then(r => r.ok ? r.json() : null),
+        fetch('/api/suppliers/', { headers: { 'Authorization': `Bearer ${token}` } }).then(r => r.ok ? r.json() : null),
+        fetch('/api/warehouses/', { headers: { 'Authorization': `Bearer ${token}` } }).then(r => r.ok ? r.json() : null),
+        fetch('/api/stock/', { headers: { 'Authorization': `Bearer ${token}` } }).then(r => r.ok ? r.json() : null),
+        fetch('/api/purchase-orders/', { headers: { 'Authorization': `Bearer ${token}` } }).then(r => r.ok ? r.json() : null),
+        fetch('/api/employees/', { headers: { 'Authorization': `Bearer ${token}` } }).then(r => r.ok ? r.json() : null)
+    ]).then(([products, suppliers, warehouses, inventory, orders, users]) => {
+        // Handle paginated or non-paginated
+        const pCount = products ? (Array.isArray(products) ? products.length : (products.count || (products.results ? products.results.length : 0))) : 0;
+        const sCount = suppliers ? (Array.isArray(suppliers) ? suppliers.length : (suppliers.count || (suppliers.results ? suppliers.results.length : 0))) : 0;
+        const wCount = warehouses ? (Array.isArray(warehouses) ? warehouses.length : (warehouses.count || (warehouses.results ? warehouses.results.length : 0))) : 0;
+        const iCount = inventory ? (Array.isArray(inventory) ? inventory.length : (inventory.count || (inventory.results ? inventory.results.length : 0))) : 0;
+        const oCount = orders ? (Array.isArray(orders) ? orders.length : (orders.count || (orders.results ? orders.results.length : 0))) : 0;
+        const uCount = users ? (Array.isArray(users) ? users.length : (users.count || (users.results ? users.results.length : 0))) : 0;
+
+        // Bar Chart: All modules
+        const labels = ['Products', 'Suppliers', 'Warehouses', 'Inventory', 'Orders', 'Users'];
+        const counts = [pCount, sCount, wCount, iCount, oCount, uCount];
+        if (!barChart) {
+            barChart = new Chart(document.getElementById('barChart'), {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Count',
+                        data: counts,
+                        backgroundColor: [
+                            'rgba(54, 162, 235, 0.7)',
+                            'rgba(255, 206, 86, 0.7)',
+                            'rgba(75, 192, 192, 0.7)',
+                            'rgba(255, 99, 132, 0.7)',
+                            'rgba(153, 102, 255, 0.7)',
+                            'rgba(255, 159, 64, 0.7)'
+                        ]
+                    }]
+                }
+            });
+        } else {
+            barChart.data.labels = labels;
+            barChart.data.datasets[0].data = counts;
+            barChart.update();
+        }
+
+        // Grouped Bar Chart: Example - 2024 vs 2025 (dummy, same data)
+        if (!groupedBarChart) {
+            groupedBarChart = new Chart(document.getElementById('groupedBarChart'), {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: '2024',
+                            data: counts,
+                            backgroundColor: 'rgba(255, 99, 132, 0.7)'
+                        },
+                        {
+                            label: '2025',
+                            data: counts,
+                            backgroundColor: 'rgba(75, 192, 192, 0.7)'
+                        }
+                    ]
+                }
+            });
+        } else {
+            groupedBarChart.data.labels = labels;
+            groupedBarChart.data.datasets[0].data = counts;
+            groupedBarChart.data.datasets[1].data = counts;
+            groupedBarChart.update();
+        }
+
+        // Pie Chart: Distribution
+        if (!pieChart) {
+            pieChart = new Chart(document.getElementById('pieChart'), {
+                type: 'pie',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Distribution',
+                        data: counts,
+                        backgroundColor: [
+                            'rgba(54, 162, 235, 0.7)',
+                            'rgba(255, 206, 86, 0.7)',
+                            'rgba(75, 192, 192, 0.7)',
+                            'rgba(255, 99, 132, 0.7)',
+                            'rgba(153, 102, 255, 0.7)',
+                            'rgba(255, 159, 64, 0.7)'
+                        ]
+                    }]
+                }
+            });
+        } else {
+            pieChart.data.labels = labels;
+            pieChart.data.datasets[0].data = counts;
+            pieChart.update();
+        }
+
+        // Show counts below charts
+        const countsDiv = document.getElementById('dashboardCounts');
+        countsDiv.innerHTML = labels.map((label, i) => `<div><strong>${label}:</strong> ${counts[i]}</div>`).join('');
+    });
+}
+
+// Load dashboard data on page load and after login
+if (localStorage.getItem('jwtToken')) fetchDashboardCounts();
+if (document.getElementById('loginForm')) {
+    document.getElementById('loginForm').addEventListener('submit', function() {
+        setTimeout(fetchDashboardCounts, 1000);
+    });
+}
+
+// Only attach event handlers if forms exist
+if (document.getElementById('productForm')) {
+    document.getElementById('productForm').onsubmit = function(e) { /* ...existing code... */ };
+}
+if (document.getElementById('supplierForm')) {
+    document.getElementById('supplierForm').onsubmit = function(e) { /* TODO: implement supplier CRUD */ };
+}
+if (document.getElementById('warehouseForm')) {
+    document.getElementById('warehouseForm').onsubmit = function(e) { /* TODO: implement warehouse CRUD */ };
+}
+if (document.getElementById('inventoryForm')) {
+    document.getElementById('inventoryForm').onsubmit = function(e) { /* TODO: implement inventory CRUD */ };
+}
+if (document.getElementById('orderForm')) {
+    document.getElementById('orderForm').onsubmit = function(e) { /* TODO: implement order CRUD */ };
+}
+if (document.getElementById('userForm')) {
+    document.getElementById('userForm').onsubmit = function(e) { /* TODO: implement user CRUD */ };
+}
+
+// --- Products CRUD JS ---
+document.addEventListener('DOMContentLoaded', function() {
+    // Generic fetch all for paginated endpoints
+    function fetchAll(url, token, allItems = []) {
+        return fetch(url, {
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        })
+        .then(res => {
+            if (!res.ok) {
+                return res.text().then(text => { throw new Error(`API error: ${res.status} ${text}`); });
+            }
+            return res.json();
+        })
+        .then(data => {
+            let results = Array.isArray(data) ? data : (data.results || []);
+            allItems = allItems.concat(results);
+            if (data.next) {
+                return fetchAll(data.next, token, allItems);
+            }
+            return allItems;
+        });
+    }
+
+    // --- Products ---
+    function fetchProducts() {
+        const token = localStorage.getItem('jwtToken');
+        const tbody = document.querySelector('#productsTable tbody');
+        if (!token) {
+            tbody.innerHTML = '<tr><td colspan="5">Please login to view products.</td></tr>';
+            return;
+        }
+        fetchAll('/api/products/', token)
+        .then(data => {
+            tbody.innerHTML = '';
+            if (!Array.isArray(data)) {
+                tbody.innerHTML = '<tr><td colspan="5">No data or unexpected API response</td></tr>';
+                return;
+            }
+            if (data.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5">No products found</td></tr>';
+                return;
+            }
+            data.forEach(product => {
+                tbody.innerHTML += `
+                    <tr>
+                        <td>${product.id}</td>
+                        <td>${product.name}</td>
+                        <td>${product.sku}</td>
+                        <td>${product.price}</td>
+                        <td>
+                            <button class=\"btn btn-sm btn-warning\" onclick=\"editProduct(${product.id}, '${product.name}', '${product.sku}', ${product.price})\">Edit</button>
+                            <button class=\"btn btn-sm btn-danger\" onclick=\"deleteProduct(${product.id})\">Delete</button>
+                        </td>
+                    </tr>
+                `;
+            });
+        })
+        .catch(err => {
+            console.error('Error fetching products:', err);
+            tbody.innerHTML = `<tr><td colspan=\"5\">Error: ${err.message}</td></tr>`;
+        });
+    }
+
+    // --- Suppliers ---
+    function fetchSuppliers() {
+        const token = localStorage.getItem('jwtToken');
+        const tbody = document.querySelector('#suppliersTable tbody');
+        if (!token) {
+            tbody.innerHTML = '<tr><td colspan="5">Please login to view suppliers.</td></tr>';
+            return;
+        }
+        fetchAll('/api/suppliers/', token)
+        .then(data => {
+            tbody.innerHTML = '';
+            if (!Array.isArray(data)) {
+                tbody.innerHTML = '<tr><td colspan="5">No data or unexpected API response</td></tr>';
+                return;
+            }
+            if (data.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5">No suppliers found</td></tr>';
+                return;
+            }
+            data.forEach(supplier => {
+                tbody.innerHTML += `
+                    <tr>
+                        <td>${supplier.id}</td>
+                        <td>${supplier.name}</td>
+                        <td>${supplier.contact_email || ''}</td>
+                        <td>${supplier.contact_phone || ''}</td>
+                        <td>
+                            <button class=\"btn btn-sm btn-warning\" onclick=\"editSupplier(${supplier.id}, '${supplier.name.replace(/'/g, "&#39;")}', '${(supplier.contact_email || '').replace(/'/g, "&#39;")}', '${(supplier.contact_phone || '').replace(/'/g, "&#39;")}', '${(supplier.contact_name || '').replace(/'/g, "&#39;")}', '${(supplier.address || '').replace(/'/g, "&#39;")}', '${(supplier.performance_metrics || '').replace(/'/g, "&#39;")}' )\">Edit</button>
+                            <button class=\"btn btn-sm btn-danger\" onclick=\"deleteSupplier(${supplier.id})\">Delete</button>
+                        </td>
+                    </tr>
+                `;
+            });
+        })
+        .catch(err => {
+            console.error('Error fetching suppliers:', err);
+            tbody.innerHTML = `<tr><td colspan=\"5\">Error: ${err.message}</td></tr>`;
+        });
+    }
+
+    window.openSupplierModal = function() {
+        if (document.getElementById('supplierForm')) {
+            document.getElementById('supplierForm').reset();
+            document.getElementById('supplierId').value = '';
+            document.getElementById('supplierModalLabel').innerText = 'Add Supplier';
+        }
+    }
+
+    window.editSupplier = function(id, name, email, phone, contact_name, address, performance_metrics) {
+        if (document.getElementById('supplierForm')) {
+            document.getElementById('supplierId').value = id;
+            document.getElementById('supplierName').value = name;
+            document.getElementById('supplierEmail').value = email;
+            document.getElementById('supplierPhone').value = phone;
+            // If you have these fields in the form, set them as well:
+            if(document.getElementById('supplierContactName')) document.getElementById('supplierContactName').value = contact_name;
+            if(document.getElementById('supplierAddress')) document.getElementById('supplierAddress').value = address;
+            if(document.getElementById('supplierPerformanceMetrics')) document.getElementById('supplierPerformanceMetrics').value = performance_metrics;
+            document.getElementById('supplierModalLabel').innerText = 'Edit Supplier';
+            var modal = new bootstrap.Modal(document.getElementById('supplierModal'));
+            modal.show();
+        }
+    }
+
+    if (document.getElementById('supplierForm')) {
+        document.getElementById('supplierForm').onsubmit = function(e) {
+            e.preventDefault();
+            const id = document.getElementById('supplierId').value;
+            const name = document.getElementById('supplierName').value;
+            const email = document.getElementById('supplierEmail').value;
+            const phone = document.getElementById('supplierPhone').value;
+            // If you have these fields in the form, get them as well:
+            const contact_name = document.getElementById('supplierContactName') ? document.getElementById('supplierContactName').value : '';
+            const address = document.getElementById('supplierAddress') ? document.getElementById('supplierAddress').value : '';
+            const performance_metrics = document.getElementById('supplierPerformanceMetrics') ? document.getElementById('supplierPerformanceMetrics').value : '';
+            const method = id ? 'PUT' : 'POST';
+            const url = id ? `/api/suppliers/${id}/` : '/api/suppliers/';
+            fetch(url, {
+                method: method,
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': localStorage.getItem('jwtToken') ? `Bearer ${localStorage.getItem('jwtToken')}` : ''
+                },
+                body: JSON.stringify({ name, contact_email: email, contact_phone: phone, contact_name, address, performance_metrics })
+            })
+            .then(res => {
+                if (!res.ok) throw new Error('Error saving supplier');
+                return res.json();
+            })
+            .then(() => {
+                fetchSuppliers();
+                var modal = bootstrap.Modal.getInstance(document.getElementById('supplierModal'));
+                modal.hide();
+            })
+            .catch(alert);
+        };
+    }
+
+    window.deleteSupplier = function(id) {
+        if (!confirm('Delete this supplier?')) return;
+        fetch(`/api/suppliers/${id}/`, {
+            method: 'DELETE',
+            headers: {
+                'Authorization': localStorage.getItem('jwtToken') ? `Bearer ${localStorage.getItem('jwtToken')}` : ''
+            }
+        })
+        .then(res => {
+            if (!res.ok) throw new Error('Error deleting supplier');
+            fetchSuppliers();
+        })
+        .catch(alert);
+    }
+
+    // --- Warehouses ---
+    function fetchWarehouses() {
+        const token = localStorage.getItem('jwtToken');
+        const tbody = document.querySelector('#warehousesTable tbody');
+        if (!token) {
+            tbody.innerHTML = '<tr><td colspan="4">Please login to view warehouses.</td></tr>';
+            return;
+        }
+        fetchAll('/api/warehouses/', token)
+        .then(data => {
+            tbody.innerHTML = '';
+            if (!Array.isArray(data)) {
+                tbody.innerHTML = '<tr><td colspan="4">No data or unexpected API response</td></tr>';
+                return;
+            }
+            if (data.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="4">No warehouses found</td></tr>';
+                return;
+            }
+            data.forEach(warehouse => {
+                tbody.innerHTML += `
+                    <tr>
+                        <td>${warehouse.id}</td>
+                        <td>${warehouse.name}</td>
+                        <td>${warehouse.location || warehouse.address || ''}</td>
+                        <td>
+                            <button class=\"btn btn-sm btn-warning\" onclick=\"editWarehouse(${warehouse.id}, '${warehouse.name.replace(/'/g, "&#39;")}', '${(warehouse.location || warehouse.address || '').replace(/'/g, "&#39;")}' )\">Edit</button>
+                            <button class=\"btn btn-sm btn-danger\" onclick=\"deleteWarehouse(${warehouse.id})\">Delete</button>
+                        </td>
+                    </tr>
+                `;
+            });
+        })
+        .catch(err => {
+            console.error('Error fetching warehouses:', err);
+            tbody.innerHTML = `<tr><td colspan=\"4\">Error: ${err.message}</td></tr>`;
+        });
+    }
+
+    window.openWarehouseModal = function() {
+        if (document.getElementById('warehouseForm')) {
+            document.getElementById('warehouseForm').reset();
+            document.getElementById('warehouseId').value = '';
+            document.getElementById('warehouseModalLabel').innerText = 'Add Warehouse';
+        }
+    }
+
+    window.editWarehouse = function(id, name, location) {
+        if (document.getElementById('warehouseForm')) {
+            document.getElementById('warehouseId').value = id;
+            document.getElementById('warehouseName').value = name;
+            document.getElementById('warehouseLocation').value = location;
+            document.getElementById('warehouseModalLabel').innerText = 'Edit Warehouse';
+            var modal = new bootstrap.Modal(document.getElementById('warehouseModal'));
+            modal.show();
+        }
+    }
+
+    if (document.getElementById('warehouseForm')) {
+        document.getElementById('warehouseForm').onsubmit = function(e) {
+            e.preventDefault();
+            const id = document.getElementById('warehouseId').value;
+            const name = document.getElementById('warehouseName').value;
+            const location = document.getElementById('warehouseLocation').value;
+            const method = id ? 'PUT' : 'POST';
+            const url = id ? `/api/warehouses/${id}/` : '/api/warehouses/';
+            fetch(url, {
+                method: method,
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': localStorage.getItem('jwtToken') ? `Bearer ${localStorage.getItem('jwtToken')}` : ''
+                },
+                body: JSON.stringify({ name, location })
+            })
+            .then(res => {
+                if (!res.ok) throw new Error('Error saving warehouse');
+                return res.json();
+            })
+            .then(() => {
+                fetchWarehouses();
+                var modal = bootstrap.Modal.getInstance(document.getElementById('warehouseModal'));
+                modal.hide();
+            })
+            .catch(alert);
+        };
+    }
+
+    window.deleteWarehouse = function(id) {
+        if (!confirm('Delete this warehouse?')) return;
+        fetch(`/api/warehouses/${id}/`, {
+            method: 'DELETE',
+            headers: {
+                'Authorization': localStorage.getItem('jwtToken') ? `Bearer ${localStorage.getItem('jwtToken')}` : ''
+            }
+        })
+        .then(res => {
+            if (!res.ok) throw new Error('Error deleting warehouse');
+            fetchWarehouses();
+        })
+        .catch(alert);
+    }
+
+    // --- Inventory ---
+    function fetchInventory() {
+        const token = localStorage.getItem('jwtToken');
+        const tbody = document.querySelector('#inventoryTable tbody');
+        if (!token) {
+            tbody.innerHTML = '<tr><td colspan="5">Please login to view inventory.</td></tr>';
+            return;
+        }
+        fetchAll('/api/stock/', token)
+        .then(data => {
+            tbody.innerHTML = '';
+            if (!Array.isArray(data)) {
+                tbody.innerHTML = '<tr><td colspan="5">No data or unexpected API response</td></tr>';
+                return;
+            }
+            if (data.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5">No inventory found</td></tr>';
+                return;
+            }
+            data.forEach(item => {
+                tbody.innerHTML += `
+                    <tr>
+                        <td>${item.id}</td>
+                        <td>${item.product || item.product_id || ''}</td>
+                        <td>${item.warehouse || item.warehouse_id || ''}</td>
+                        <td>${item.quantity || ''}</td>
+                        <td>
+                            <button class=\"btn btn-sm btn-warning\" onclick=\"editInventory(${item.id}, '${item.product || item.product_id || ''}', '${item.warehouse || item.warehouse_id || ''}', '${item.quantity || ''}')\">Edit</button>
+                            <button class=\"btn btn-sm btn-danger\" onclick=\"deleteInventory(${item.id})\">Delete</button>
+                        </td>
+                    </tr>
+                `;
+            });
+        })
+        .catch(err => {
+            console.error('Error fetching inventory:', err);
+            tbody.innerHTML = `<tr><td colspan=\"5\">Error: ${err.message}</td></tr>`;
+        });
+    }
+
+    window.openInventoryModal = function() {
+        if (document.getElementById('inventoryForm')) {
+            document.getElementById('inventoryForm').reset();
+            document.getElementById('inventoryId').value = '';
+            document.getElementById('inventoryModalLabel').innerText = 'Add Inventory';
+        }
+    }
+
+    window.editInventory = function(id, product, warehouse, quantity) {
+        if (document.getElementById('inventoryForm')) {
+            document.getElementById('inventoryId').value = id;
+            document.getElementById('inventoryProduct').value = product;
+            document.getElementById('inventoryWarehouse').value = warehouse;
+            document.getElementById('inventoryQuantity').value = quantity;
+            document.getElementById('inventoryModalLabel').innerText = 'Edit Inventory';
+            var modal = new bootstrap.Modal(document.getElementById('inventoryModal'));
+            modal.show();
+        }
+    }
+
+    if (document.getElementById('inventoryForm')) {
+        document.getElementById('inventoryForm').onsubmit = function(e) {
+            e.preventDefault();
+            const id = document.getElementById('inventoryId').value;
+            const product = document.getElementById('inventoryProduct').value;
+            const warehouse = document.getElementById('inventoryWarehouse').value;
+            const quantity = document.getElementById('inventoryQuantity').value;
+            const method = id ? 'PUT' : 'POST';
+            const url = id ? `/api/stock/${id}/` : '/api/stock/';
+            fetch(url, {
+                method: method,
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': localStorage.getItem('jwtToken') ? `Bearer ${localStorage.getItem('jwtToken')}` : ''
+                },
+                body: JSON.stringify({ product, warehouse, quantity })
+            })
+            .then(res => {
+                if (!res.ok) throw new Error('Error saving inventory');
+                return res.json();
+            })
+            .then(() => {
+                fetchInventory();
+                var modal = bootstrap.Modal.getInstance(document.getElementById('inventoryModal'));
+                modal.hide();
+            })
+            .catch(alert);
+        };
+    }
+
+    window.deleteInventory = function(id) {
+        if (!confirm('Delete this inventory item?')) return;
+        fetch(`/api/stock/${id}/`, {
+            method: 'DELETE',
+            headers: {
+                'Authorization': localStorage.getItem('jwtToken') ? `Bearer ${localStorage.getItem('jwtToken')}` : ''
+            }
+        })
+        .then(res => {
+            if (!res.ok) throw new Error('Error deleting inventory');
+            fetchInventory();
+        })
+        .catch(alert);
+    }
+
+    // --- Orders (Purchase Orders) ---
+    function fetchOrders() {
+        const token = localStorage.getItem('jwtToken');
+        const tbody = document.querySelector('#ordersTable tbody');
+        if (!token) {
+            tbody.innerHTML = '<tr><td colspan="6">Please login to view orders.</td></tr>';
+            return;
+        }
+        fetchAll('/api/purchase-orders/', token)
+        .then(data => {
+            tbody.innerHTML = '';
+            if (!Array.isArray(data)) {
+                tbody.innerHTML = '<tr><td colspan="6">No data or unexpected API response</td></tr>';
+                return;
+            }
+            if (data.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6">No orders found</td></tr>';
+                return;
+            }
+            data.forEach(order => {
+                tbody.innerHTML += `
+                    <tr>
+                        <td>${order.id}</td>
+                        <td>${order.supplier || ''}</td>
+                        <td>${order.status || ''}</td>
+                        <td>${order.order_date || ''}</td>
+                        <td>${order.expected_date || ''}</td>
+                        <td>
+                            <button class=\"btn btn-sm btn-warning\" onclick=\"editOrder(${order.id}, '${order.supplier || ''}', '${order.status || ''}', '${order.order_date || ''}', '${order.expected_date || ''}')\">Edit</button>
+                            <button class=\"btn btn-sm btn-danger\" onclick=\"deleteOrder(${order.id})\">Delete</button>
+                        </td>
+                    </tr>
+                `;
+            });
+        })
+        .catch(err => {
+            console.error('Error fetching orders:', err);
+            tbody.innerHTML = `<tr><td colspan=\"6\">Error: ${err.message}</td></tr>`;
+        });
+    }
+
+    window.openOrderModal = function() {
+        if (document.getElementById('orderForm')) {
+            document.getElementById('orderForm').reset();
+            document.getElementById('orderId').value = '';
+            document.getElementById('orderModalLabel').innerText = 'Add Order';
+        }
+    }
+
+    window.editOrder = function(id, supplier, status, order_date, expected_date) {
+        if (document.getElementById('orderForm')) {
+            document.getElementById('orderId').value = id;
+            document.getElementById('orderSupplier').value = supplier;
+            document.getElementById('orderStatus').value = status;
+            document.getElementById('orderOrderDate').value = order_date;
+            document.getElementById('orderExpectedDate').value = expected_date;
+            document.getElementById('orderModalLabel').innerText = 'Edit Order';
+            var modal = new bootstrap.Modal(document.getElementById('orderModal'));
+            modal.show();
+        }
+    }
+
+    if (document.getElementById('orderForm')) {
+        document.getElementById('orderForm').onsubmit = function(e) {
+            e.preventDefault();
+            const id = document.getElementById('orderId').value;
+            const supplier = document.getElementById('orderSupplier').value;
+            const status = document.getElementById('orderStatus').value;
+            const order_date = document.getElementById('orderOrderDate').value;
+            const expected_date = document.getElementById('orderExpectedDate').value;
+            const method = id ? 'PUT' : 'POST';
+            const url = id ? `/api/purchase-orders/${id}/` : '/api/purchase-orders/';
+            fetch(url, {
+                method: method,
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': localStorage.getItem('jwtToken') ? `Bearer ${localStorage.getItem('jwtToken')}` : ''
+                },
+                body: JSON.stringify({ supplier, status, order_date, expected_date })
+            })
+            .then(res => {
+                if (!res.ok) throw new Error('Error saving order');
+                return res.json();
+            })
+            .then(() => {
+                fetchOrders();
+                var modal = bootstrap.Modal.getInstance(document.getElementById('orderModal'));
+                modal.hide();
+            })
+            .catch(alert);
+        };
+    }
+
+    window.deleteOrder = function(id) {
+        if (!confirm('Delete this order?')) return;
+        fetch(`/api/purchase-orders/${id}/`, {
+            method: 'DELETE',
+            headers: {
+                'Authorization': localStorage.getItem('jwtToken') ? `Bearer ${localStorage.getItem('jwtToken')}` : ''
+            }
+        })
+        .then(res => {
+            if (!res.ok) throw new Error('Error deleting order');
+            fetchOrders();
+        })
+        .catch(alert);
+    }
+
+    // --- Users (Employees) ---
+    function fetchUsers() {
+        const token = localStorage.getItem('jwtToken');
+        const tbody = document.querySelector('#usersTable tbody');
+        if (!token) {
+            tbody.innerHTML = '<tr><td colspan="4">Please login to view users.</td></tr>';
+            return;
+        }
+        fetchAll('/api/employees/', token)
+        .then(data => {
+            tbody.innerHTML = '';
+            if (!Array.isArray(data)) {
+                tbody.innerHTML = '<tr><td colspan="4">No data or unexpected API response</td></tr>';
+                return;
+            }
+            if (data.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="4">No users found</td></tr>';
+                return;
+            }
+            data.forEach(user => {
+                tbody.innerHTML += `
+                    <tr>
+                        <td>${user.id}</td>
+                        <td>${user.user && user.user.username ? user.user.username : ''}</td>
+                        <td>${user.user && user.user.email ? user.user.email : ''}</td>
+                        <td>
+                            <button class=\"btn btn-sm btn-warning\" onclick=\"editUser(${user.id}, '${user.user && user.user.username ? user.user.username.replace(/'/g, "&#39;") : ''}', '${user.user && user.user.email ? user.user.email.replace(/'/g, "&#39;") : ''}')\">Edit</button>
+                            <button class=\"btn btn-sm btn-danger\" onclick=\"deleteUser(${user.id})\">Delete</button>
+                        </td>
+                    </tr>
+                `;
+            });
+        })
+        .catch(err => {
+            console.error('Error fetching users:', err);
+            tbody.innerHTML = `<tr><td colspan=\"4\">Error: ${err.message}</td></tr>`;
+        });
+    }
+
+    window.openUserModal = function() {
+        if (document.getElementById('userForm')) {
+            document.getElementById('userForm').reset();
+            document.getElementById('userId').value = '';
+            document.getElementById('userModalLabel').innerText = 'Add User';
+        }
+    }
+
+    window.editUser = function(id, username, email) {
+        if (document.getElementById('userForm')) {
+            document.getElementById('userId').value = id;
+            document.getElementById('userUsername').value = username;
+            document.getElementById('userEmail').value = email;
+            document.getElementById('userModalLabel').innerText = 'Edit User';
+            var modal = new bootstrap.Modal(document.getElementById('userModal'));
+            modal.show();
+        }
+    }
+
+    if (document.getElementById('userForm')) {
+        document.getElementById('userForm').onsubmit = function(e) {
+            e.preventDefault();
+            const id = document.getElementById('userId').value;
+            const username = document.getElementById('userUsername').value;
+            const email = document.getElementById('userEmail').value;
+            const method = id ? 'PUT' : 'POST';
+            const url = id ? `/api/employees/${id}/` : '/api/employees/';
+            fetch(url, {
+                method: method,
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': localStorage.getItem('jwtToken') ? `Bearer ${localStorage.getItem('jwtToken')}` : ''
+                },
+                body: JSON.stringify({ username, email })
+            })
+            .then(res => {
+                if (!res.ok) throw new Error('Error saving user');
+                return res.json();
+            })
+            .then(() => {
+                fetchUsers();
+                var modal = bootstrap.Modal.getInstance(document.getElementById('userModal'));
+                modal.hide();
+            })
+            .catch(alert);
+        };
+    }
+
+    window.deleteUser = function(id) {
+        if (!confirm('Delete this user?')) return;
+        fetch(`/api/employees/${id}/`, {
+            method: 'DELETE',
+            headers: {
+                'Authorization': localStorage.getItem('jwtToken') ? `Bearer ${localStorage.getItem('jwtToken')}` : ''
+            }
+        })
+        .then(res => {
+            if (!res.ok) throw new Error('Error deleting user');
+            fetchUsers();
+        })
+        .catch(alert);
+    }
+
+    // Tab event listeners
+    if (document.getElementById('manage-tab')) {
+        document.getElementById('manage-tab').addEventListener('shown.bs.tab', fetchProducts);
+    }
+    if (document.getElementById('products-manage-tab')) {
+        document.getElementById('products-manage-tab').addEventListener('shown.bs.tab', fetchProducts);
+    }
+    if (document.getElementById('suppliers-manage-tab')) {
+        document.getElementById('suppliers-manage-tab').addEventListener('shown.bs.tab', fetchSuppliers);
+    }
+    if (document.getElementById('warehouses-manage-tab')) {
+        document.getElementById('warehouses-manage-tab').addEventListener('shown.bs.tab', fetchWarehouses);
+    }
+    if (document.getElementById('inventory-manage-tab')) {
+        document.getElementById('inventory-manage-tab').addEventListener('shown.bs.tab', fetchInventory);
+    }
+    if (document.getElementById('orders-manage-tab')) {
+        document.getElementById('orders-manage-tab').addEventListener('shown.bs.tab', fetchOrders);
+    }
+    if (document.getElementById('users-manage-tab')) {
+        document.getElementById('users-manage-tab').addEventListener('shown.bs.tab', fetchUsers);
+    }
+});
+</script>
+{% endblock %}

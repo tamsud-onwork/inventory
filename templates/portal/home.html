@@ -1,0 +1,1005 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inventory Portal Home</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            background: linear-gradient(135deg, #f8fafc 0%, #e0e7ff 100%);
+            min-height: 100vh;
+        }
+        .sidebar {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+            color: #fff;
+            padding-top: 2rem;
+        }
+        .sidebar .nav-link {
+            color: #fff;
+            margin-bottom: 1rem;
+            font-weight: 500;
+        }
+        .sidebar .nav-link.active, .sidebar .nav-link:hover {
+            background: #fff;
+            color: #2575fc;
+            border-radius: 4px;
+        }
+        .content {
+            padding: 2rem;
+        }
+        .header-logo {
+            width: 48px;
+            height: 48px;
+            object-fit: contain;
+            border-radius: 50%;
+            background: #fff;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            margin-right: 1rem;
+        }
+        .header-title {
+            font-weight: 700;
+            color: #2575fc;
+            letter-spacing: 1px;
+            display: inline-block;
+            vertical-align: middle;
+            word-break: break-word;
+            max-width: 100%;
+        }
+        @media (max-width: 700px) {
+            .header-title {
+                font-size: 1.2rem !important;
+                letter-spacing: 1px !important;
+                padding: 0.1em 0.2em !important;
+            }
+            .content {
+                padding: 0.5rem !important;
+            }
+        }
+        .bg-dark {
+            background: linear-gradient(90deg, #6a11cb 0%, #2575fc 100%) !important;
+        }
+        .btn-danger {
+            background: linear-gradient(90deg, #ff416c 0%, #ff4b2b 100%);
+            border: none;
+        }
+        .btn-danger:hover {
+            background: linear-gradient(90deg, #ff4b2b 0%, #ff416c 100%);
+        }
+    </style>
+</head>
+<body>
+<div class="container-fluid">
+    <div class="row bg-dark text-white align-items-center py-2" style="margin-bottom:0;">
+        <div class="col-md-6 d-flex align-items-center">
+            <span class="header-title" style="font-size:2.5rem; letter-spacing:2.5px; text-shadow: 0 4px 16px rgba(38,50,56,0.18), 0 1.5px 0 #fff; font-weight:900; word-break:break-word; max-width:100%;">
+                <span style="color:#fff; background:linear-gradient(90deg,#6a11cb 0%,#2575fc 100%); padding:0.2em 0.6em; border-radius:8px; box-shadow:0 2px 8px rgba(38,50,56,0.10); display:inline-block; max-width:100%; word-break:break-word;">INVENTORY PORTAL</span>
+            </span>
+        </div>
+        <div class="col-md-6 text-end">
+            <button class="btn btn-danger" onclick="logout()">Logout</button>
+        </div>
+    </div>
+    <div class="row" style="margin-top:0;">
+        <nav class="col-md-2 d-none d-md-block sidebar">
+            <div class="position-sticky">
+                <ul class="nav flex-column">
+                    <li class="nav-item"><a class="nav-link active" href="#" data-section="dashboard">Dashboard</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#" data-section="products">Products</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#" data-section="suppliers">Suppliers</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#" data-section="warehouses">Warehouses</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#" data-section="inventory">Inventory</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#" data-section="orders">Orders</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#" data-section="users">Users</a></li>
+                </ul>
+            </div>
+        </nav>
+        <main class="col-md-10 ms-sm-auto col-lg-10 px-md-4 content">
+            <div id="section-dashboard">
+                <h2>Dashboard</h2>
+                <div id="dashboardContent">Loading...</div>
+                <div class="row mt-4 g-3">
+                    <div class="col-md-6 col-lg-4">
+                        <canvas id="productsChart"></canvas>
+                    </div>
+                    <div class="col-md-6 col-lg-4">
+                        <canvas id="ordersChart"></canvas>
+                    </div>
+                    <div class="col-md-6 col-lg-4">
+                        <canvas id="inventoryBarChart"></canvas>
+                    </div>
+                    <div class="col-md-6 col-lg-4">
+                        <canvas id="inventoryLineChart"></canvas>
+                    </div>
+                    <div class="col-md-6 col-lg-4">
+                        <canvas id="inventoryPieChart"></canvas>
+                    </div>
+                </div>
+            </div>
+            <div id="section-products" style="display:none;">
+                <h2>Products</h2>
+                <button class="btn btn-primary mb-2" onclick="showProductModal()">Add Product</button>
+                <button class="btn btn-outline-secondary mb-2 ms-2" onclick="exportTableAsPDF('productsContent', 'Products')">Export as PDF</button>
+                <div id="productsContent">Loading...</div>
+                <div id="productModalContainer"></div>
+            </div>
+            <div id="section-suppliers" style="display:none;">
+                <h2>Suppliers</h2>
+                <button class="btn btn-primary mb-2" onclick="showSupplierModal()">Add Supplier</button>
+                <button class="btn btn-outline-secondary mb-2 ms-2" onclick="exportTableAsPDF('suppliersContent', 'Suppliers')">Export as PDF</button>
+                <div id="suppliersContent">Loading...</div>
+                <div id="supplierModalContainer"></div>
+            </div>
+            <div id="section-warehouses" style="display:none;">
+                <h2>Warehouses</h2>
+                <button class="btn btn-primary mb-2" onclick="showWarehouseModal()">Add Warehouse</button>
+                <button class="btn btn-outline-secondary mb-2 ms-2" onclick="exportTableAsPDF('warehousesContent', 'Warehouses')">Export as PDF</button>
+                <div id="warehousesContent">Loading...</div>
+                <div id="warehouseModalContainer"></div>
+            </div>
+            <div id="section-inventory" style="display:none;">
+                <h2>Inventory</h2>
+                <button class="btn btn-primary mb-2" onclick="showInventoryModal()">Add Inventory</button>
+                <button class="btn btn-outline-secondary mb-2 ms-2" onclick="exportTableAsPDF('inventoryContent', 'Inventory')">Export as PDF</button>
+                <div id="inventoryContent">Loading...</div>
+                <div id="inventoryModalContainer"></div>
+            </div>
+            <div id="section-orders" style="display:none;">
+                <h2>Orders</h2>
+                <button class="btn btn-primary mb-2" onclick="showOrderModal()">Add Order</button>
+                <button class="btn btn-outline-secondary mb-2 ms-2" onclick="exportTableAsPDF('ordersContent', 'Orders')">Export as PDF</button>
+                <div id="ordersContent">Loading...</div>
+                <div id="orderModalContainer"></div>
+            </div>
+            <div id="section-users" style="display:none;">
+                <h2>Users</h2>
+                <button class="btn btn-primary mb-2" onclick="showUserModal()">Add User</button>
+                <button class="btn btn-outline-secondary mb-2 ms-2" onclick="exportTableAsPDF('usersContent', 'Users')">Export as PDF</button>
+                <div id="usersContent">Loading...</div>
+                <div id="userModalContainer"></div>
+            </div>
+        </main>
+    </div>
+</div>
+<script>
+// --- Render pagination controls ---
+function renderPagination(data, section) {
+    if (!data || (!data.next && !data.previous && (!data.count || data.count <= (data.results ? data.results.length : 0)))) return '';
+    let page = 1;
+    let pageSize = 10;
+    let total = 0;
+    if (data && data.results) {
+        // Use the page_size from the API if available, else fallback to PAGE_SIZE or 10
+        pageSize = data.page_size || (data.results.length && window.PAGE_SIZE) || 10;
+        total = data.count || 0;
+    }
+    // Try to get current page from window[section+'Page']
+    if (window[section + 'Page']) {
+        page = window[section + 'Page'];
+    } else if (data && data.next) {
+        const match = data.next.match(/page=(\d+)/);
+        if (match) page = parseInt(match[1]) - 1;
+    } else if (data && data.previous) {
+        const match = data.previous.match(/page=(\d+)/);
+        if (match) page = parseInt(match[1]) + 1;
+    }
+    let totalPages = Math.ceil(total / pageSize);
+    if (!totalPages) totalPages = 1;
+    if (page > totalPages) page = totalPages;
+    // If current page is past last page, don't render extra pages
+    let html = '<nav><ul class="pagination justify-content-center">';
+    html += `<li class="page-item${page <= 1 ? ' disabled' : ''}"><a class="page-link" href="#" onclick="gotoPage('${section}',${page-1});return false;">Previous</a></li>`;
+    for (let i = 1; i <= totalPages; i++) {
+        html += `<li class="page-item${i === page ? ' active' : ''}"><a class="page-link" href="#" onclick="gotoPage('${section}',${i});return false;">${i}</a></li>`;
+    }
+    html += `<li class="page-item${page >= totalPages ? ' disabled' : ''}"><a class="page-link" href="#" onclick="gotoPage('${section}',${page+1});return false;">Next</a></li>`;
+    html += '</ul></nav>';
+    return html;
+}
+
+function gotoPage(section, page) {
+    window[section + 'Page'] = page;
+    switch(section) {
+        case 'products': loadProducts(); break;
+        case 'suppliers': loadSuppliers(); break;
+        case 'warehouses': loadWarehouses(); break;
+        case 'inventory': loadInventory(); break;
+        case 'orders': loadOrders(); break;
+        case 'users': loadUsers(); break;
+    }
+}
+// --- Logout function ---
+function logout() {
+    localStorage.removeItem('jwtToken');
+    window.location.href = '/login/';
+}
+
+// --- Export as PDF for tables ---
+function exportTableAsPDF(contentId, title) {
+    const content = document.getElementById(contentId);
+    if (!window.jsPDF) {
+        const script = document.createElement('script');
+        script.src = 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js';
+        script.onload = () => exportTableAsPDF(contentId, title);
+        document.body.appendChild(script);
+        return;
+    }
+    const doc = new window.jspdf.jsPDF();
+    doc.html(content, {
+        callback: function (doc) {
+            doc.save(title + '.pdf');
+        },
+        x: 10, y: 10, width: 180
+    });
+}
+
+// --- CRUD for Suppliers ---
+function loadSuppliers() {
+    const token = localStorage.getItem('jwtToken');
+    fetchAll('/api/suppliers/', token)
+    .then(data => {
+        let html = '<table class="table table-bordered"><thead><tr><th>ID</th><th>Name</th><th>Email</th><th>Phone</th><th>Actions</th></tr></thead><tbody>';
+        if (data.length === 0) html += '<tr><td colspan="5">No suppliers found</td></tr>';
+        data.forEach(s => {
+            html += `<tr><td>${s.id}</td><td>${s.name}</td><td>${s.contact_email || ''}</td><td>${s.contact_phone || ''}</td><td>
+                <button class='btn btn-sm btn-warning' onclick='showSupplierModal(${JSON.stringify(s)})'>Edit</button>
+                <button class='btn btn-sm btn-danger' onclick='deleteSupplier(${s.id})'>Delete</button>
+            </td></tr>`;
+        });
+        html += '</tbody></table>';
+        document.getElementById('suppliersContent').innerHTML = html;
+    })
+    .catch(err => { document.getElementById('suppliersContent').innerHTML = `<div class="alert alert-danger">${err.message}</div>`; });
+}
+function showSupplierModal(supplier) {
+    const isEdit = !!supplier;
+    const modalHtml = `
+    <div class="modal fade show" id="supplierModal" tabindex="-1" style="display:block; background:rgba(0,0,0,0.5);">
+      <div class="modal-dialog"><div class="modal-content">
+        <div class="modal-header"><h5 class="modal-title">${isEdit ? 'Edit' : 'Add'} Supplier</h5>
+          <button type="button" class="btn-close" onclick="closeSupplierModal()"></button>
+        </div>
+        <div class="modal-body">
+          <form id="supplierForm">
+            <input type="hidden" name="id" value="${supplier?.id || ''}">
+            <div class="mb-2"><label>Name</label><input class="form-control" name="name" value="${supplier?.name || ''}" required></div>
+            <div class="mb-2"><label>Email</label><input class="form-control" name="contact_email" value="${supplier?.contact_email || ''}"></div>
+            <div class="mb-2"><label>Phone</label><input class="form-control" name="contact_phone" value="${supplier?.contact_phone || ''}"></div>
+            <button type="submit" class="btn btn-success">${isEdit ? 'Update' : 'Create'}</button>
+            <button type="button" class="btn btn-secondary ms-2" onclick="closeSupplierModal()">Cancel</button>
+          </form>
+        </div>
+      </div></div>
+    </div>`;
+    document.getElementById('supplierModalContainer').innerHTML = modalHtml;
+    document.getElementById('supplierForm').onsubmit = function(e) {
+        e.preventDefault();
+        const form = e.target;
+        const data = {
+            name: form.name.value,
+            contact_email: form.contact_email.value,
+            contact_phone: form.contact_phone.value
+        };
+        const token = localStorage.getItem('jwtToken');
+        if (isEdit) {
+            fetch(`/api/suppliers/${supplier.id}/`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                body: JSON.stringify(data)
+            }).then(r => r.ok ? loadSuppliers() : r.text().then(t => alert(t)));
+        } else {
+            fetch('/api/suppliers/', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                body: JSON.stringify(data)
+            }).then(r => r.ok ? loadSuppliers() : r.text().then(t => alert(t)));
+        }
+        closeSupplierModal();
+    };
+}
+function closeSupplierModal() { document.getElementById('supplierModalContainer').innerHTML = ''; }
+function deleteSupplier(id) {
+    if (!confirm('Delete this supplier?')) return;
+    const token = localStorage.getItem('jwtToken');
+    fetch(`/api/suppliers/${id}/`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${token}` }
+    }).then(r => r.ok ? loadSuppliers() : r.text().then(t => alert(t)));
+}
+
+// --- CRUD for Warehouses ---
+function loadWarehouses() {
+    const token = localStorage.getItem('jwtToken');
+    fetchAll('/api/warehouses/', token)
+    .then(data => {
+        let html = '<table class="table table-bordered"><thead><tr><th>ID</th><th>Name</th><th>Location</th><th>Actions</th></tr></thead><tbody>';
+        if (data.length === 0) html += '<tr><td colspan="4">No warehouses found</td></tr>';
+        data.forEach(w => {
+            html += `<tr><td>${w.id}</td><td>${w.name}</td><td>${w.location || w.address || ''}</td><td>
+                <button class='btn btn-sm btn-warning' onclick='showWarehouseModal(${JSON.stringify(w)})'>Edit</button>
+                <button class='btn btn-sm btn-danger' onclick='deleteWarehouse(${w.id})'>Delete</button>
+            </td></tr>`;
+        });
+        html += '</tbody></table>';
+        document.getElementById('warehousesContent').innerHTML = html;
+    })
+    .catch(err => { document.getElementById('warehousesContent').innerHTML = `<div class="alert alert-danger">${err.message}</div>`; });
+}
+function showWarehouseModal(warehouse) {
+    const isEdit = !!warehouse;
+    const modalHtml = `
+    <div class="modal fade show" id="warehouseModal" tabindex="-1" style="display:block; background:rgba(0,0,0,0.5);">
+      <div class="modal-dialog"><div class="modal-content">
+        <div class="modal-header"><h5 class="modal-title">${isEdit ? 'Edit' : 'Add'} Warehouse</h5>
+          <button type="button" class="btn-close" onclick="closeWarehouseModal()"></button>
+        </div>
+        <div class="modal-body">
+          <form id="warehouseForm">
+            <input type="hidden" name="id" value="${warehouse?.id || ''}">
+            <div class="mb-2"><label>Name</label><input class="form-control" name="name" value="${warehouse?.name || ''}" required></div>
+            <div class="mb-2"><label>Location</label><input class="form-control" name="location" value="${warehouse?.location || warehouse?.address || ''}"></div>
+            <button type="submit" class="btn btn-success">${isEdit ? 'Update' : 'Create'}</button>
+            <button type="button" class="btn btn-secondary ms-2" onclick="closeWarehouseModal()">Cancel</button>
+          </form>
+        </div>
+      </div></div>
+    </div>`;
+    document.getElementById('warehouseModalContainer').innerHTML = modalHtml;
+    document.getElementById('warehouseForm').onsubmit = function(e) {
+        e.preventDefault();
+        const form = e.target;
+        const data = {
+            name: form.name.value,
+            location: form.location.value
+        };
+        const token = localStorage.getItem('jwtToken');
+        if (isEdit) {
+            fetch(`/api/warehouses/${warehouse.id}/`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                body: JSON.stringify(data)
+            }).then(r => r.ok ? loadWarehouses() : r.text().then(t => alert(t)));
+        } else {
+            fetch('/api/warehouses/', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                body: JSON.stringify(data)
+            }).then(r => r.ok ? loadWarehouses() : r.text().then(t => alert(t)));
+        }
+        closeWarehouseModal();
+    };
+}
+function closeWarehouseModal() { document.getElementById('warehouseModalContainer').innerHTML = ''; }
+function deleteWarehouse(id) {
+    if (!confirm('Delete this warehouse?')) return;
+    const token = localStorage.getItem('jwtToken');
+    fetch(`/api/warehouses/${id}/`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${token}` }
+    }).then(r => r.ok ? loadWarehouses() : r.text().then(t => alert(t)));
+}
+
+// --- CRUD for Inventory ---
+function loadInventory() {
+    const token = localStorage.getItem('jwtToken');
+    fetchAll('/api/stock/', token)
+    .then(data => {
+        let html = '<table class="table table-bordered"><thead><tr><th>ID</th><th>Product</th><th>Warehouse</th><th>Quantity</th><th>Actions</th></tr></thead><tbody>';
+        if (data.length === 0) html += '<tr><td colspan="5">No inventory found</td></tr>';
+        data.forEach(i => {
+            html += `<tr><td>${i.id}</td><td>${i.product || i.product_id || ''}</td><td>${i.warehouse || i.warehouse_id || ''}</td><td>${i.quantity || ''}</td><td>
+                <button class='btn btn-sm btn-warning' onclick='showInventoryModal(${JSON.stringify(i)})'>Edit</button>
+                <button class='btn btn-sm btn-danger' onclick='deleteInventory(${i.id})'>Delete</button>
+            </td></tr>`;
+        });
+        html += '</tbody></table>';
+        document.getElementById('inventoryContent').innerHTML = html;
+    })
+    .catch(err => { document.getElementById('inventoryContent').innerHTML = `<div class="alert alert-danger">${err.message}</div>`; });
+}
+function showInventoryModal(item) {
+    const isEdit = !!item;
+    const modalHtml = `
+    <div class="modal fade show" id="inventoryModal" tabindex="-1" style="display:block; background:rgba(0,0,0,0.5);">
+      <div class="modal-dialog"><div class="modal-content">
+        <div class="modal-header"><h5 class="modal-title">${isEdit ? 'Edit' : 'Add'} Inventory</h5>
+          <button type="button" class="btn-close" onclick="closeInventoryModal()"></button>
+        </div>
+        <div class="modal-body">
+          <form id="inventoryForm">
+            <input type="hidden" name="id" value="${item?.id || ''}">
+            <div class="mb-2"><label>Product</label><input class="form-control" name="product" value="${item?.product || item?.product_id || ''}" required></div>
+            <div class="mb-2"><label>Warehouse</label><input class="form-control" name="warehouse" value="${item?.warehouse || item?.warehouse_id || ''}" required></div>
+            <div class="mb-2"><label>Quantity</label><input class="form-control" name="quantity" type="number" value="${item?.quantity || ''}" required></div>
+            <button type="submit" class="btn btn-success">${isEdit ? 'Update' : 'Create'}</button>
+            <button type="button" class="btn btn-secondary ms-2" onclick="closeInventoryModal()">Cancel</button>
+          </form>
+        </div>
+      </div></div>
+    </div>`;
+    document.getElementById('inventoryModalContainer').innerHTML = modalHtml;
+    document.getElementById('inventoryForm').onsubmit = function(e) {
+        e.preventDefault();
+        const form = e.target;
+        const data = {
+            product: form.product.value,
+            warehouse: form.warehouse.value,
+            quantity: form.quantity.value
+        };
+        const token = localStorage.getItem('jwtToken');
+        if (isEdit) {
+            fetch(`/api/stock/${item.id}/`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                body: JSON.stringify(data)
+            }).then(r => r.ok ? loadInventory() : r.text().then(t => alert(t)));
+        } else {
+            fetch('/api/stock/', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                body: JSON.stringify(data)
+            }).then(r => r.ok ? loadInventory() : r.text().then(t => alert(t)));
+        }
+        closeInventoryModal();
+    };
+}
+function closeInventoryModal() { document.getElementById('inventoryModalContainer').innerHTML = ''; }
+function deleteInventory(id) {
+    if (!confirm('Delete this inventory item?')) return;
+    const token = localStorage.getItem('jwtToken');
+    fetch(`/api/stock/${id}/`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${token}` }
+    }).then(r => r.ok ? loadInventory() : r.text().then(t => alert(t)));
+}
+
+// --- CRUD for Orders ---
+function loadOrders() {
+    const token = localStorage.getItem('jwtToken');
+    fetchAll('/api/purchase-orders/', token)
+    .then(data => {
+        let html = '<table class="table table-bordered"><thead><tr><th>ID</th><th>Supplier</th><th>Status</th><th>Order Date</th><th>Expected Date</th><th>Actions</th></tr></thead><tbody>';
+        if (data.length === 0) html += '<tr><td colspan="6">No orders found</td></tr>';
+        data.forEach(o => {
+            html += `<tr><td>${o.id}</td><td>${o.supplier || ''}</td><td>${o.status || ''}</td><td>${o.order_date || ''}</td><td>${o.expected_date || ''}</td><td>
+                <button class='btn btn-sm btn-warning' onclick='showOrderModal(${JSON.stringify(o)})'>Edit</button>
+                <button class='btn btn-sm btn-danger' onclick='deleteOrder(${o.id})'>Delete</button>
+            </td></tr>`;
+        });
+        html += '</tbody></table>';
+        document.getElementById('ordersContent').innerHTML = html;
+    })
+    .catch(err => { document.getElementById('ordersContent').innerHTML = `<div class="alert alert-danger">${err.message}</div>`; });
+}
+function showOrderModal(order) {
+    const isEdit = !!order;
+    const modalHtml = `
+    <div class="modal fade show" id="orderModal" tabindex="-1" style="display:block; background:rgba(0,0,0,0.5);">
+      <div class="modal-dialog"><div class="modal-content">
+        <div class="modal-header"><h5 class="modal-title">${isEdit ? 'Edit' : 'Add'} Order</h5>
+          <button type="button" class="btn-close" onclick="closeOrderModal()"></button>
+        </div>
+        <div class="modal-body">
+          <form id="orderForm">
+            <input type="hidden" name="id" value="${order?.id || ''}">
+            <div class="mb-2"><label>Supplier</label><input class="form-control" name="supplier" value="${order?.supplier || ''}" required></div>
+            <div class="mb-2"><label>Status</label><input class="form-control" name="status" value="${order?.status || ''}" required></div>
+            <div class="mb-2"><label>Order Date</label><input class="form-control" name="order_date" type="date" value="${order?.order_date || ''}"></div>
+            <div class="mb-2"><label>Expected Date</label><input class="form-control" name="expected_date" type="date" value="${order?.expected_date || ''}"></div>
+            <button type="submit" class="btn btn-success">${isEdit ? 'Update' : 'Create'}</button>
+            <button type="button" class="btn btn-secondary ms-2" onclick="closeOrderModal()">Cancel</button>
+          </form>
+        </div>
+      </div></div>
+    </div>`;
+    document.getElementById('orderModalContainer').innerHTML = modalHtml;
+    document.getElementById('orderForm').onsubmit = function(e) {
+        e.preventDefault();
+        const form = e.target;
+        const data = {
+            supplier: form.supplier.value,
+            status: form.status.value,
+            order_date: form.order_date.value,
+            expected_date: form.expected_date.value
+        };
+        const token = localStorage.getItem('jwtToken');
+        if (isEdit) {
+            fetch(`/api/purchase-orders/${order.id}/`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                body: JSON.stringify(data)
+            }).then(r => r.ok ? loadOrders() : r.text().then(t => alert(t)));
+        } else {
+            fetch('/api/purchase-orders/', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                body: JSON.stringify(data)
+            }).then(r => r.ok ? loadOrders() : r.text().then(t => alert(t)));
+        }
+        closeOrderModal();
+    };
+}
+function closeOrderModal() { document.getElementById('orderModalContainer').innerHTML = ''; }
+function deleteOrder(id) {
+    if (!confirm('Delete this order?')) return;
+    const token = localStorage.getItem('jwtToken');
+    fetch(`/api/purchase-orders/${id}/`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${token}` }
+    }).then(r => r.ok ? loadOrders() : r.text().then(t => alert(t)));
+}
+
+// --- CRUD for Users ---
+function loadUsers() {
+    const token = localStorage.getItem('jwtToken');
+    fetchAll('/api/employees/', token)
+    .then(data => {
+        let html = '<table class="table table-bordered"><thead><tr><th>ID</th><th>Username</th><th>Email</th><th>Actions</th></tr></thead><tbody>';
+        if (data.length === 0) html += '<tr><td colspan="4">No users found</td></tr>';
+        data.forEach(u => {
+            html += `<tr><td>${u.id}</td><td>${u.user && u.user.username ? u.user.username : ''}</td><td>${u.user && u.user.email ? u.user.email : ''}</td><td>
+                <button class='btn btn-sm btn-warning' onclick='showUserModal(${JSON.stringify(u)})'>Edit</button>
+                <button class='btn btn-sm btn-danger' onclick='deleteUser(${u.id})'>Delete</button>
+            </td></tr>`;
+        });
+        html += '</tbody></table>';
+        document.getElementById('usersContent').innerHTML = html;
+    })
+    .catch(err => { document.getElementById('usersContent').innerHTML = `<div class="alert alert-danger">${err.message}</div>`; });
+}
+function showUserModal(user) {
+    const isEdit = !!user;
+    const modalHtml = `
+    <div class="modal fade show" id="userModal" tabindex="-1" style="display:block; background:rgba(0,0,0,0.5);">
+      <div class="modal-dialog"><div class="modal-content">
+        <div class="modal-header"><h5 class="modal-title">${isEdit ? 'Edit' : 'Add'} User</h5>
+          <button type="button" class="btn-close" onclick="closeUserModal()"></button>
+        </div>
+        <div class="modal-body">
+          <form id="userForm">
+            <input type="hidden" name="id" value="${user?.id || ''}">
+            <div class="mb-2"><label>Username</label><input class="form-control" name="username" value="${user?.user?.username || ''}" required></div>
+            <div class="mb-2"><label>Email</label><input class="form-control" name="email" value="${user?.user?.email || ''}" required></div>
+            <button type="submit" class="btn btn-success">${isEdit ? 'Update' : 'Create'}</button>
+            <button type="button" class="btn btn-secondary ms-2" onclick="closeUserModal()">Cancel</button>
+          </form>
+        </div>
+      </div></div>
+    </div>`;
+    document.getElementById('userModalContainer').innerHTML = modalHtml;
+    document.getElementById('userForm').onsubmit = function(e) {
+        e.preventDefault();
+        const form = e.target;
+        const data = {
+            username: form.username.value,
+            email: form.email.value
+        };
+        const token = localStorage.getItem('jwtToken');
+        if (isEdit) {
+            fetch(`/api/employees/${user.id}/`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                body: JSON.stringify(data)
+            }).then(r => r.ok ? loadUsers() : r.text().then(t => alert(t)));
+        } else {
+            fetch('/api/employees/', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                body: JSON.stringify(data)
+            }).then(r => r.ok ? loadUsers() : r.text().then(t => alert(t)));
+        }
+        closeUserModal();
+    };
+}
+function closeUserModal() { document.getElementById('userModalContainer').innerHTML = ''; }
+function deleteUser(id) {
+    if (!confirm('Delete this user?')) return;
+    const token = localStorage.getItem('jwtToken');
+    fetch(`/api/employees/${id}/`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${token}` }
+    }).then(r => r.ok ? loadUsers() : r.text().then(t => alert(t)));
+}
+// Sidebar navigation
+const navLinks = document.querySelectorAll('.sidebar .nav-link');
+navLinks.forEach(link => {
+    link.addEventListener('click', function(e) {
+        e.preventDefault();
+        navLinks.forEach(l => l.classList.remove('active'));
+        this.classList.add('active');
+        const section = this.getAttribute('data-section');
+        document.querySelectorAll('[id^="section-"]').forEach(div => div.style.display = 'none');
+        document.getElementById('section-' + section).style.display = '';
+    });
+});
+// --- Helper for paginated fetch and single page fetch ---
+function fetchPage(url, token) {
+    return fetch(url, {
+        headers: { 'Authorization': `Bearer ${token}` }
+    })
+    .then(res => res.ok ? res.json() : res.text().then(t => { throw new Error(t); }));
+}
+function fetchAll(url, token, allItems = []) {
+    // For legacy: fetch all pages
+    return fetchPage(url, token).then(data => {
+        let results = Array.isArray(data) ? data : (data.results || []);
+        allItems = allItems.concat(results);
+        if (data.next) return fetchAll(data.next, token, allItems);
+        return allItems;
+    });
+}
+
+function requireAuth() {
+    if (!localStorage.getItem('jwtToken')) {
+        window.location.href = '/login/';
+    }
+}
+requireAuth();
+
+// Dashboard: show counts and charts for each module
+let productsChart, ordersChart;
+function loadDashboard() {
+    const token = localStorage.getItem('jwtToken');
+    Promise.all([
+        fetchAll('/api/products/', token),
+        fetchAll('/api/suppliers/', token),
+        fetchAll('/api/warehouses/', token),
+        fetchAll('/api/stock/', token),
+        fetchAll('/api/purchase-orders/', token),
+        fetchAll('/api/employees/', token)
+    ]).then(([products, suppliers, warehouses, inventory, orders, users]) => {
+        document.getElementById('dashboardContent').innerHTML = `
+            <div class="row g-3 flex-nowrap overflow-auto" style="white-space:nowrap;">
+                <div class="col-auto"><div class="card"><div class="card-body text-center"><h6>Products</h6><p class="display-6 mb-0">${products.length}</p></div></div></div>
+                <div class="col-auto"><div class="card"><div class="card-body text-center"><h6>Suppliers</h6><p class="display-6 mb-0">${suppliers.length}</p></div></div></div>
+                <div class="col-auto"><div class="card"><div class="card-body text-center"><h6>Warehouses</h6><p class="display-6 mb-0">${warehouses.length}</p></div></div></div>
+                <div class="col-auto"><div class="card"><div class="card-body text-center"><h6>Inventory</h6><p class="display-6 mb-0">${inventory.length}</p></div></div></div>
+                <div class="col-auto"><div class="card"><div class="card-body text-center"><h6>Orders</h6><p class="display-6 mb-0">${orders.length}</p></div></div></div>
+                <div class="col-auto"><div class="card"><div class="card-body text-center"><h6>Users</h6><p class="display-6 mb-0">${users.length}</p></div></div></div>
+            </div>
+        `;
+        // Products by SKU/category (if available)
+        let productLabels = products.map(p => p.name);
+        let productData = products.map(p => p.price || p.unit_price || 0);
+        if (productsChart) productsChart.destroy();
+        productsChart = new Chart(document.getElementById('productsChart'), {
+            type: 'bar',
+            data: {
+                labels: productLabels,
+                datasets: [{
+                    label: 'Product Price',
+                    data: productData,
+                    backgroundColor: 'rgba(54, 162, 235, 0.5)'
+                }]
+            },
+            options: { plugins: { legend: { display: false } }, responsive: true, maintainAspectRatio: false, aspectRatio: 2 }
+        });
+        // Orders by status
+        let orderStatus = {};
+        orders.forEach(o => { orderStatus[o.status] = (orderStatus[o.status] || 0) + 1; });
+        if (ordersChart) ordersChart.destroy();
+        ordersChart = new Chart(document.getElementById('ordersChart'), {
+            type: 'doughnut',
+            data: {
+                labels: Object.keys(orderStatus),
+                datasets: [{
+                    label: 'Orders by Status',
+                    data: Object.values(orderStatus),
+                    backgroundColor: ['#36a2eb', '#ff6384', '#ffce56', '#4bc0c0', '#9966ff']
+                }]
+            },
+            options: { plugins: { legend: { position: 'bottom' } }, responsive: true, maintainAspectRatio: false, aspectRatio: 2 }
+        });
+
+        // --- Product Inventory Charts ---
+        // Group inventory by product
+        let inventoryByProduct = {};
+        inventory.forEach(i => {
+            let prod = i.product || i.product_id || 'Unknown';
+            inventoryByProduct[prod] = (inventoryByProduct[prod] || 0) + (i.quantity || 0);
+        });
+        let invLabels = Object.keys(inventoryByProduct);
+        let invData = Object.values(inventoryByProduct);
+        // Bar chart
+        if (window.inventoryBarChart && typeof window.inventoryBarChart.destroy === 'function') window.inventoryBarChart.destroy();
+        window.inventoryBarChart = new Chart(document.getElementById('inventoryBarChart'), {
+            type: 'bar',
+            data: {
+                labels: invLabels,
+                datasets: [{
+                    label: 'Inventory by Product',
+                    data: invData,
+                    backgroundColor: 'rgba(255, 99, 132, 0.5)'
+                }]
+            },
+            options: { plugins: { legend: { display: false } }, responsive: true, maintainAspectRatio: false, aspectRatio: 2 }
+        });
+        // Line chart
+        if (window.inventoryLineChart && typeof window.inventoryLineChart.destroy === 'function') window.inventoryLineChart.destroy();
+        window.inventoryLineChart = new Chart(document.getElementById('inventoryLineChart'), {
+            type: 'line',
+            data: {
+                labels: invLabels,
+                datasets: [{
+                    label: 'Inventory Trend',
+                    data: invData,
+                    fill: false,
+                    borderColor: 'rgba(54, 162, 235, 1)',
+                    tension: 0.1
+                }]
+            },
+            options: { plugins: { legend: { display: true } }, responsive: true, maintainAspectRatio: false, aspectRatio: 2 }
+        });
+        // Pie chart
+        if (window.inventoryPieChart && typeof window.inventoryPieChart.destroy === 'function') window.inventoryPieChart.destroy();
+        window.inventoryPieChart = new Chart(document.getElementById('inventoryPieChart'), {
+            type: 'pie',
+            data: {
+                labels: invLabels,
+                datasets: [{
+                    label: 'Inventory Share',
+                    data: invData,
+                    backgroundColor: [
+                        '#36a2eb', '#ff6384', '#ffce56', '#4bc0c0', '#9966ff', '#ff9f40', '#8bc34a', '#e91e63', '#00bcd4', '#ffc107'
+                    ]
+                }]
+            },
+            options: { plugins: { legend: { position: 'bottom' } }, responsive: true, maintainAspectRatio: false, aspectRatio: 2 }
+        });
+    }).catch(err => {
+        document.getElementById('dashboardContent').innerHTML = `<div class="alert alert-danger">Error loading dashboard: ${err.message}</div>`;
+    });
+}
+
+// --- CRUD for Products ---
+function loadProducts() {
+    const token = localStorage.getItem('jwtToken');
+    let page = window.productsPage || 1;
+    fetchPage(`/api/products/?page=${page}`, token)
+    .then(data => {
+        let results = Array.isArray(data) ? data : (data.results || []);
+        let html = '<table class="table table-bordered"><thead><tr><th>ID</th><th>Name</th><th>SKU</th><th>Price</th><th>Actions</th></tr></thead><tbody>';
+        if (results.length === 0) html += '<tr><td colspan="5">No products found</td></tr>';
+        results.forEach(p => {
+            html += `<tr><td>${p.id}</td><td>${p.name}</td><td>${p.sku}</td><td>${p.price || p.unit_price || ''}</td><td>
+                <button class='btn btn-sm btn-warning' onclick='showProductModal(${JSON.stringify(p)})'>Edit</button>
+                <button class='btn btn-sm btn-danger' onclick='deleteProduct(${p.id})'>Delete</button>
+            </td></tr>`;
+        });
+        html += '</tbody></table>';
+        // Pagination controls
+        html += renderPagination(data, 'products');
+        document.getElementById('productsContent').innerHTML = html;
+    })
+    .catch(err => { document.getElementById('productsContent').innerHTML = `<div class="alert alert-danger">${err.message}</div>`; });
+}
+
+function showProductModal(product) {
+    const isEdit = !!product;
+    const modalHtml = `
+    <div class="modal fade show" id="productModal" tabindex="-1" style="display:block; background:rgba(0,0,0,0.5);">
+      <div class="modal-dialog"><div class="modal-content">
+        <div class="modal-header"><h5 class="modal-title">${isEdit ? 'Edit' : 'Add'} Product</h5>
+          <button type="button" class="btn-close" onclick="closeProductModal()"></button>
+        </div>
+        <div class="modal-body">
+          <form id="productForm">
+            <input type="hidden" name="id" value="${product?.id || ''}">
+            <div class="mb-2"><label>Name</label><input class="form-control" name="name" value="${product?.name || ''}" required></div>
+            <div class="mb-2"><label>SKU</label><input class="form-control" name="sku" value="${product?.sku || ''}" required></div>
+            <div class="mb-2"><label>Price</label><input class="form-control" name="price" type="number" step="0.01" value="${product?.price || product?.unit_price || ''}" required></div>
+            <button type="submit" class="btn btn-success">${isEdit ? 'Update' : 'Create'}</button>
+            <button type="button" class="btn btn-secondary ms-2" onclick="closeProductModal()">Cancel</button>
+          </form>
+        </div>
+      </div></div>
+    </div>`;
+    document.getElementById('productModalContainer').innerHTML = modalHtml;
+    document.getElementById('productForm').onsubmit = function(e) {
+        e.preventDefault();
+        const form = e.target;
+        const data = {
+            name: form.name.value,
+            sku: form.sku.value,
+            price: form.price.value
+        };
+        const token = localStorage.getItem('jwtToken');
+        if (isEdit) {
+            fetch(`/api/products/${product.id}/`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                body: JSON.stringify(data)
+            }).then(r => r.ok ? loadProducts() : r.text().then(t => alert(t)));
+        } else {
+            fetch('/api/products/', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                body: JSON.stringify(data)
+            }).then(r => r.ok ? loadProducts() : r.text().then(t => alert(t)));
+        }
+        closeProductModal();
+    };
+}
+function closeProductModal() { document.getElementById('productModalContainer').innerHTML = ''; }
+function deleteProduct(id) {
+    if (!confirm('Delete this product?')) return;
+    const token = localStorage.getItem('jwtToken');
+    fetch(`/api/products/${id}/`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${token}` }
+    }).then(r => r.ok ? loadProducts() : r.text().then(t => alert(t)));
+}
+
+// --- Repeat similar CRUD for Suppliers, Warehouses, Inventory, Orders, Users ---
+// For brevity, only the Products section is shown in full detail here.
+// The same pattern (showXModal, closeXModal, deleteX, and loadX) should be implemented for each section.
+// ...
+
+function loadSuppliers() {
+    const token = localStorage.getItem('jwtToken');
+    let page = window.suppliersPage || 1;
+    fetchPage(`/api/suppliers/?page=${page}`, token)
+    .then(data => {
+        let results = Array.isArray(data) ? data : (data.results || []);
+        let html = '<table class="table table-bordered"><thead><tr><th>ID</th><th>Name</th><th>Email</th><th>Phone</th><th>Actions</th></tr></thead><tbody>';
+        if (results.length === 0) html += '<tr><td colspan="5">No suppliers found</td></tr>';
+        results.forEach(s => {
+            html += `<tr><td>${s.id}</td><td>${s.name}</td><td>${s.contact_email || ''}</td><td>${s.contact_phone || ''}</td><td>
+                <button class='btn btn-sm btn-warning' onclick='showSupplierModal(${JSON.stringify(s)})'>Edit</button>
+                <button class='btn btn-sm btn-danger' onclick='deleteSupplier(${s.id})'>Delete</button>
+            </td></tr>`;
+        });
+        html += '</tbody></table>';
+        html += renderPagination(data, 'suppliers');
+        document.getElementById('suppliersContent').innerHTML = html;
+    })
+    .catch(err => { document.getElementById('suppliersContent').innerHTML = `<div class="alert alert-danger">${err.message}</div>`; });
+}
+
+function loadWarehouses() {
+    const token = localStorage.getItem('jwtToken');
+    let page = window.warehousesPage || 1;
+    fetchPage(`/api/warehouses/?page=${page}`, token)
+    .then(data => {
+        let results = Array.isArray(data) ? data : (data.results || []);
+        let html = '<table class="table table-bordered"><thead><tr><th>ID</th><th>Name</th><th>Location</th><th>Actions</th></tr></thead><tbody>';
+        if (results.length === 0) html += '<tr><td colspan="4">No warehouses found</td></tr>';
+        results.forEach(w => {
+            html += `<tr><td>${w.id}</td><td>${w.name}</td><td>${w.location || w.address || ''}</td><td>
+                <button class='btn btn-sm btn-warning' onclick='showWarehouseModal(${JSON.stringify(w)})'>Edit</button>
+                <button class='btn btn-sm btn-danger' onclick='deleteWarehouse(${w.id})'>Delete</button>
+            </td></tr>`;
+        });
+        html += '</tbody></table>';
+        html += renderPagination(data, 'warehouses');
+        document.getElementById('warehousesContent').innerHTML = html;
+    })
+    .catch(err => { document.getElementById('warehousesContent').innerHTML = `<div class="alert alert-danger">${err.message}</div>`; });
+}
+
+function loadInventory() {
+    const token = localStorage.getItem('jwtToken');
+    let page = window.inventoryPage || 1;
+    fetchPage(`/api/stock/?page=${page}`, token)
+    .then(data => {
+        let results = Array.isArray(data) ? data : (data.results || []);
+        let html = '<table class="table table-bordered"><thead><tr><th>ID</th><th>Product</th><th>Warehouse</th><th>Quantity</th><th>Actions</th></tr></thead><tbody>';
+        if (results.length === 0) html += '<tr><td colspan="5">No inventory found</td></tr>';
+        results.forEach(i => {
+            html += `<tr><td>${i.id}</td><td>${i.product || i.product_id || ''}</td><td>${i.warehouse || i.warehouse_id || ''}</td><td>${i.quantity || ''}</td><td>
+                <button class='btn btn-sm btn-warning' onclick='showInventoryModal(${JSON.stringify(i)})'>Edit</button>
+                <button class='btn btn-sm btn-danger' onclick='deleteInventory(${i.id})'>Delete</button>
+            </td></tr>`;
+        });
+        html += '</tbody></table>';
+        html += renderPagination(data, 'inventory');
+        document.getElementById('inventoryContent').innerHTML = html;
+    })
+    .catch(err => { document.getElementById('inventoryContent').innerHTML = `<div class="alert alert-danger">${err.message}</div>`; });
+}
+
+function loadOrders() {
+    const token = localStorage.getItem('jwtToken');
+    let page = window.ordersPage || 1;
+    fetchPage(`/api/purchase-orders/?page=${page}`, token)
+    .then(data => {
+        let results = Array.isArray(data) ? data : (data.results || []);
+        let html = '<table class="table table-bordered"><thead><tr><th>ID</th><th>Supplier</th><th>Status</th><th>Order Date</th><th>Expected Date</th><th>Actions</th></tr></thead><tbody>';
+        if (results.length === 0) html += '<tr><td colspan="6">No orders found</td></tr>';
+        results.forEach(o => {
+            html += `<tr><td>${o.id}</td><td>${o.supplier || ''}</td><td>${o.status || ''}</td><td>${o.order_date || ''}</td><td>${o.expected_date || ''}</td><td>
+                <button class='btn btn-sm btn-warning' onclick='showOrderModal(${JSON.stringify(o)})'>Edit</button>
+                <button class='btn btn-sm btn-danger' onclick='deleteOrder(${o.id})'>Delete</button>
+            </td></tr>`;
+        });
+        html += '</tbody></table>';
+        html += renderPagination(data, 'orders');
+        document.getElementById('ordersContent').innerHTML = html;
+    })
+    .catch(err => { document.getElementById('ordersContent').innerHTML = `<div class="alert alert-danger">${err.message}</div>`; });
+}
+
+function loadUsers() {
+    const token = localStorage.getItem('jwtToken');
+    let page = window.usersPage || 1;
+    fetchPage(`/api/employees/?page=${page}`, token)
+    .then(data => {
+        let results = Array.isArray(data) ? data : (data.results || []);
+        let html = '<table class="table table-bordered"><thead><tr><th>ID</th><th>Username</th><th>Email</th><th>Actions</th></tr></thead><tbody>';
+        if (results.length === 0) html += '<tr><td colspan="4">No users found</td></tr>';
+        results.forEach(u => {
+            html += `<tr><td>${u.id}</td><td>${u.user && u.user.username ? u.user.username : ''}</td><td>${u.user && u.user.email ? u.user.email : ''}</td><td>
+                <button class='btn btn-sm btn-warning' onclick='showUserModal(${JSON.stringify(u)})'>Edit</button>
+                <button class='btn btn-sm btn-danger' onclick='deleteUser(${u.id})'>Delete</button>
+            </td></tr>`;
+        });
+        html += '</tbody></table>';
+        html += renderPagination(data, 'users');
+        document.getElementById('usersContent').innerHTML = html;
+    })
+    .catch(err => { document.getElementById('usersContent').innerHTML = `<div class="alert alert-danger">${err.message}</div>`; });
+// --- Render pagination controls ---
+function renderPagination(data, section) {
+    if (!data || (!data.next && !data.previous && (!data.count || data.count <= (data.results ? data.results.length : 0)))) return '';
+    let page = 1;
+    let pageSize = 10;
+    let total = 0;
+    if (data && data.results) {
+        pageSize = data.results.length;
+        total = data.count || 0;
+    }
+    if (data && data.next) {
+        const match = data.next.match(/page=(\d+)/);
+        if (match) page = parseInt(match[1]) - 1;
+    } else if (data && data.previous) {
+        const match = data.previous.match(/page=(\d+)/);
+        if (match) page = parseInt(match[1]) + 1;
+    }
+    let totalPages = Math.ceil(total / pageSize);
+    let html = '<nav><ul class="pagination justify-content-center">';
+    html += `<li class="page-item${page <= 1 ? ' disabled' : ''}"><a class="page-link" href="#" onclick="gotoPage('${section}',${page-1});return false;">Previous</a></li>`;
+    for (let i = 1; i <= totalPages; i++) {
+        html += `<li class="page-item${i === page ? ' active' : ''}"><a class="page-link" href="#" onclick="gotoPage('${section}',${i});return false;">${i}</a></li>`;
+    }
+    html += `<li class="page-item${page >= totalPages ? ' disabled' : ''}"><a class="page-link" href="#" onclick="gotoPage('${section}',${page+1});return false;">Next</a></li>`;
+    html += '</ul></nav>';
+    return html;
+}
+
+function gotoPage(section, page) {
+    window[section + 'Page'] = page;
+    switch(section) {
+        case 'products': loadProducts(); break;
+        case 'suppliers': loadSuppliers(); break;
+        case 'warehouses': loadWarehouses(); break;
+        case 'inventory': loadInventory(); break;
+        case 'orders': loadOrders(); break;
+        case 'users': loadUsers(); break;
+    }
+}
+}
+
+// Load data when section is shown
+const sectionLoaders = {
+    dashboard: loadDashboard,
+    products: loadProducts,
+    suppliers: loadSuppliers,
+    warehouses: loadWarehouses,
+    inventory: loadInventory,
+    orders: loadOrders,
+    users: loadUsers
+};
+// Initial load
+loadDashboard();
+// Load on tab click
+navLinks.forEach(link => {
+    link.addEventListener('click', function() {
+        const section = this.getAttribute('data-section');
+        if (sectionLoaders[section]) sectionLoaders[section]();
+    });
+});
+</script>
+</body>
+</html>

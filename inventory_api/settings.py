@@ -26,6 +26,8 @@ https://docs.djangoproject.com/en/5.0/ref/settings/
 
 from pathlib import Path
 from datetime import timedelta
+import os
+from corsheaders.defaults import default_headers
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -75,12 +77,21 @@ MIDDLEWARE = [
 # Internationalization
 # https://docs.djangoproject.com/en/5.0/topics/i18n/
 
+
 # CORS configuration for frontend integration
-import os
+
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",
+    "http://localhost:3000",
 ]
 CORS_ALLOW_CREDENTIALS = True
+# Allow and expose the custom header
+CORS_ALLOW_HEADERS = list(default_headers) + [
+    "access-control-allow-methods",
+]
+CORS_EXPOSE_HEADERS = [
+    "access-control-allow-methods",
+]
 # For development only, you may use:
 # CORS_ALLOW_ALL_ORIGINS = True
 
@@ -89,7 +100,7 @@ ROOT_URLCONF = 'inventory_api.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [BASE_DIR / 'templates'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [

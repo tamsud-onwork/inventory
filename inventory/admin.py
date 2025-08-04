@@ -1,5 +1,19 @@
+
 from django.contrib import admin
+from django.urls import path
+from django.template.response import TemplateResponse
 from .models import Stock, StockMovement, StockAdjustment
+
+# Branding
+admin.site.site_header = "Inventory"
+admin.site.site_title = "Inventory Admin"
+admin.site.index_title = "Inventory Dashboard"
+
+
+# Override the admin index view to show the dashboard as landing page
+def inventory_dashboard(request):
+    return TemplateResponse(request, "admin/inventory_dashboard.html", {})
+admin.site.index = inventory_dashboard
 
 @admin.register(Stock)
 class StockAdmin(admin.ModelAdmin):
