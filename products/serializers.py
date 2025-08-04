@@ -12,26 +12,21 @@ class ProductVariantSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 class ProductSerializer(serializers.ModelSerializer):
-    category = CategorySerializer(read_only=True)
-    category_id = serializers.PrimaryKeyRelatedField(queryset=Category.objects.all(), source='category', write_only=True)
-    variants = ProductVariantSerializer(many=True, read_only=True)
+    category = CategorySerializer(read_only=True, required=False, allow_null=True)
+    category_id = serializers.PrimaryKeyRelatedField(queryset=Category.objects.all(), source='category', write_only=True, required=False, allow_null=True)
+    variants = ProductVariantSerializer(many=True, read_only=True, required=False)
 
     class Meta:
         model = Product
         fields = ['id', 'name', 'description', 'sku', 'barcode', 'category', 'category_id', 'unit_price', 'weight', 'dimensions', 'variants']
+        extra_kwargs = {
+            'name': {'required': False, 'allow_null': True},
+            'description': {'required': False, 'allow_null': True},
+            'sku': {'required': False, 'allow_null': True},
+            'barcode': {'required': False, 'allow_null': True},
+            'unit_price': {'required': False, 'allow_null': True},
+            'weight': {'required': False, 'allow_null': True},
+            'dimensions': {'required': False, 'allow_null': True},
+        }
 
-    def validate_unit_price(self, value):
-        if value is None or value <= 0:
-            raise serializers.ValidationError("Unit price must be positive.")
-        return value
-
-    def validate_sku(self, value):
-        if Product.objects.filter(sku=value).exists():
-            raise serializers.ValidationError("SKU must be unique.")
-        return value
-
-    def validate(self, data):
-        # Example: Ensure category is present
-        if not data.get('category'):
-            raise serializers.ValidationError("Category is required.")
-        return data
+    # All fields are now optional; remove required field validation
